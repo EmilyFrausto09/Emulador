@@ -9,12 +9,12 @@ namespace Emulador
     {
         public enum Tipos
         {
-            Identificador, Numero, Caracter, FinSentencia,  |
+            Identificador, Numero, Caracter, FinSentencia,
             InicioBloque, FinBloque, OperadorTernario,
             OperadorTermino, OperadorFactor, IncrementoTermino,
             IncrementoFactor, Puntero, Asignacion,
             OperadorRelacional, OperadorLogico, Moneda,
-            Cadena, TipoDato, PalabraReservada,FuncionMatematica
+            Cadena, TipoDato, PalabraReservada,FuncionMatematica,
         }
         private string contenido;
         private Tipos clasificacion;

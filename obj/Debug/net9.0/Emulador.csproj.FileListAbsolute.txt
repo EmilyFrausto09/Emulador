@@ -1,0 +1,5 @@
+C:\Users\fraus\OneDrive\Documentos\SEMESTRE ENERO-AGOSTO\Automatas2\Emulador\obj\Debug\net9.0\Emulador.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\fraus\OneDrive\Documentos\SEMESTRE ENERO-AGOSTO\Automatas2\Emulador\obj\Debug\net9.0\Emulador.AssemblyInfoInputs.cache
+C:\Users\fraus\OneDrive\Documentos\SEMESTRE ENERO-AGOSTO\Automatas2\Emulador\obj\Debug\net9.0\Emulador.AssemblyInfo.cs
+C:\Users\fraus\OneDrive\Documentos\SEMESTRE ENERO-AGOSTO\Automatas2\Emulador\obj\Debug\net9.0\Emulador.csproj.CoreCompileInputs.cache
+C:\Users\fraus\OneDrive\Documentos\SEMESTRE ENERO-AGOSTO\Automatas2\Emulador\obj\Debug\net9.0\Emulador.sourcelink.json

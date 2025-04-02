@@ -19,7 +19,6 @@ case "round":
 
 */
 
-int main(){
-    std:: roun
+int main(){ 
     return 0;
 }

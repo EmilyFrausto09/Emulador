@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace Semantica
+namespace Emulador
 {
     public class Error : Exception
     {

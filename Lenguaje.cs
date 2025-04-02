@@ -8,7 +8,6 @@
     5. Programar el While
 
 */
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -128,15 +127,30 @@ namespace Emulador
                     match("Console");
                     match(".");
                     if (Contenido == "Read")
-                    {
-                        match("Read");
-                        int r = Console.Read();
-                        if (maximoTipo > Variable.valorToTipoDato(r))
-                        {
-                            throw new Error("Tipo Dato. No esta permitido asignar un valor " + maximoTipo + "a una variable " + Variable.valorToTipoDato(r), log, linea, columna);
-                        }
-                        v.setValor(r);
-                    }
+{
+    match("Read");
+    try
+    {
+        int r = Console.Read();
+        if (maximoTipo > Variable.valorToTipoDato(r))
+        {
+            throw new Error("Tipo Dato. No esta permitido asignar un valor " + maximoTipo + " a una variable " + Variable.valorToTipoDato(r), log, linea, columna);
+        }
+        v.setValor(r);
+    }
+    catch (System.IO.IOException ex)
+    {
+        throw new Error("Error de E/S al leer desde la consola: " + ex.Message, log, linea, columna);
+    }
+    catch (OutOfMemoryException ex)
+    {
+        throw new Error("Error de memoria al leer desde la consola: " + ex.Message, log, linea, columna);
+    }
+    catch (Exception ex)
+    {
+        throw new Error("Error inesperado en Console.Read(): " + ex.Message, log, linea, columna);
+    }
+}
                     else
                     {
                         match("ReadLine");
@@ -211,15 +225,15 @@ namespace Emulador
             }
             else if (Contenido == "while")
             {
-                While();
+                While(ejecuta);
             }
             else if (Contenido == "do")
             {
-                Do();
+                Do(ejecuta);
             }
             else if (Contenido == "for")
             {
-                For();
+                For(ejecuta);
             }
             else if (Clasificacion == Tipos.TipoDato)
             {
@@ -382,11 +396,11 @@ namespace Emulador
             }
         }
         //While -> while(Condicion) bloqueInstrucciones | instruccion
-        private void While()
+        private void While(bool ejecuta)
         {
             match("while");
             match("(");
-            Condicion();
+            bool condicionWhile = Condicion() && ejecuta;
             match(")");
             if (Contenido == "{")
             {
@@ -399,61 +413,102 @@ namespace Emulador
         }
         /*Do -> do bloqueInstrucciones | intruccion 
         while(Condicion);*/
-        private void Do(bool execute)
+        private void Do(bool ejecuta)
         {
-            int charTmp = CaracterContador - 3;
-            int lineTmp = Error.line;
             bool executeDo;
+            int charTmp = Caracter - 3;
+            int linetmp = Error.linea;
             do
             {
                 match("do");
 
                 if (Contenido == "{")
                 {
-                    BloqueInstrucciones(true);
+                    BloqueInstrucciones(ejecuta);
                 }
                 else
                 {
-                    Instruccion(true);
+                    Instruccion(ejecuta);
                 }
                 match("while");
                 match("(");
-                Condicion();
+                executeDo = Condicion() && ejecuta;
                 match(")");
                 match(";");
+
                 if (executeDo)
                 {
-                    //Seek cambiar protected en el file 
-                    file.BaseStream.seek(charTmp, seekOrigin.Begin);
-                    CaracterContador = charTmp;
-                    Erro.line = lineTmp;
-                    NextToken();
-                    console.WriteLine(Contenido);
-
+                    archivo.BaseStream.Seek(charTmp, System.IO.SeekOrigin.Begin); // Corrección de 'seekOrigin' a 'SeekOrigin'
+                    Caracter = charTmp; // Suponiendo que 'CaracterActual' es la variable correcta
+                    nextToken(); // Asegúrate de que este método exista
                 }
-
             }
             while (executeDo);
         }
         /*For -> for(Asignacion; Condicion; Asignacion) 
         BloqueInstrucciones | Intruccion*/
-        private void For(bool execute)
+        private void For(bool ejecuta)
         {
             match("for");
             match("(");
             Asignacion();
             match(";");
-            bool executefor = Condicion() && execute;
+
+            int posCond = (int)archivo.BaseStream.Position;
+            int lineaCond = linea;
+
+            bool executeFor = Condicion() && ejecuta;
             match(";");
+
+            int posIncr = (int)archivo.BaseStream.Position;
+            int lineaIncr = linea;
+
             Asignacion();
             match(")");
+
+            int posCuerpo = (int)archivo.BaseStream.Position;
+            int lineaCuerpo = linea;
+
+            if (executeFor)
+            {
+                do
+                {
+                    // Ejecutar el cuerpo
+                    archivo.BaseStream.Seek(posCuerpo, System.IO.SeekOrigin.Begin);
+                    linea = lineaCuerpo;
+                    nextToken();
+
+                    if (Contenido == "{")
+                    {
+                        BloqueInstrucciones(true);
+                    }
+                    else
+                    {
+                        Instruccion(true);
+                    }
+
+                    // Ejecutar el incremento (segunda asignación)
+                    archivo.BaseStream.Seek(posIncr, System.IO.SeekOrigin.Begin);
+                    linea = lineaIncr;
+                    nextToken();
+                    Asignacion();
+
+                    // Volver a evaluar la condición
+                    archivo.BaseStream.Seek(posCond, System.IO.SeekOrigin.Begin);
+                    linea = lineaCond;
+                    nextToken();
+                    executeFor = Condicion() && ejecuta;
+
+                } while (executeFor);
+            }
             if (Contenido == "{")
             {
-                BloqueInstrucciones(executefor);
+                BloqueInstrucciones(false);
             }
             else
             {
-                Instruccio(executefor);
+                Instruccion(false);
+
             }
         }
         //Console -> Console.(WriteLine|Write) (cadena? concatenaciones?);
@@ -618,17 +673,19 @@ namespace Emulador
                 //Console.Write(Contenido + " ");
                 match(Tipos.Identificador);
             }
-            else if (clasificacion = tipo.FuncionMatematica)
+            else if (this.Clasificacion == Tipos.FuncionMatematica)
             {
-                string FuncionName = contenido;
-                match(tipo.FuncionMatematica);
+                string funcionMath = Contenido;
+                match(Tipos.FuncionMatematica);
+
                 match("(");
-                expresion();
+                Expresion();
                 match(")");
 
-                float result = s.pop();
-                float mathresult = FuncionMatematica(result, FuncionName);
-                s.push(mathresult);
+                float resultado = s.Pop();
+
+                float resultadoMath = FuncionMatematica(resultado, funcionMath);
+                s.Push(resultadoMath);
             }
             else
             {
@@ -662,25 +719,61 @@ namespace Emulador
                 match(")");
             }
         }
-        private float FuncionMatematica(float value, string name)
+        private float FuncionMatematica(float valor, string nombre)
         {
-            float result;
+            float resultado = valor;
 
-            switch (name)
+            switch (nombre)
             {
-                case "abs": result = Math.Abs(value); break;
-                case "pow": result = (float)Math.pow(value, 2); break:
+                case "abs": 
+            resultado = Math.Abs(valor); 
+            break;
+        case "ceil": 
+            resultado = (float)Math.Ceiling(valor); // Corrección de math.ceiling a Math.Ceiling
+            break;
+        case "pow": 
+            resultado = (float)Math.Pow(valor, 2); // Añadimos el segundo parámetro que faltaba
+            break;
+        case "sqrt": 
+            resultado = (float)Math.Sqrt(valor); // Corrección de math.sqrt a Math.Sqrt
+            break;
+        case "exp": 
+            resultado = (float)Math.Exp(valor); 
+            break;
+        case "floor": 
+            resultado = (float)Math.Floor(valor); 
+            break;
+        case "max":
+            resultado = Math.Max(valor, 0); // Asumimos que queremos el máximo entre el valor y 0
+            break;
+        case "log10": 
+            resultado = (float)Math.Log10(valor); // Corrección de math.log10 a Math.Log10
+            break;
+        case "log2": 
+            resultado = (float)Math.Log(valor, 2); // No existe Math.Log2 directamente, usamos Log con base 2
+            break;
+        case "rand":
+            Random random = new Random();
+            resultado = (float)random.NextDouble() * valor; // Corrección del operador = a *
+            break;
+        case "trunc": 
+            resultado = (float)Math.Truncate(valor); 
+            break;
+        case "round": 
+            resultado = (float)Math.Round(valor); 
+            break;
+
             }
-            if (nombre == "abs")
-            {
-                return FuncionMatematica.Abs(value);
-            }
-            else if (name == "pow") ;
-            return (float)Math.pow(value, 2);
-            return value;
+            /*if(nombre == "abs"){
+                return Math.Abs (valor);
+            } else if (nombre == "pow"){
+                return (float) Math.Pow (valor, 2);
+            }*/
+
+            return resultado;
         }
-
         /*SNT = Producciones = Invocar el metodo
         ST  = Tokens (Contenido | Classification) = Invocar match    Variables -> tipo_dato Lista_identificadores; Variables?*/
     }
 }
+
