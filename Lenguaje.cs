@@ -1,11 +1,11 @@
 /*
     REQUERIMIENTOS
-    1. Excepción en el Console.Read()
-    2. La segunda asignación del for (incremento) debe de ejecutarse después del bloque
-       de instrucciones o instrucción
-    3. Programar FuncionMatematica Metodo (MatFunction)
-    4. Programar el For 
-    5. Programar el While
+      REQUERIMIENTOS
+    1. Excepción en el Console.Read().
+    2. Programar MathFunction método.
+    3. Programar el for. La segunda asignación del for (incremento) 
+       debe de ejecutarse después del bloque de instrucciones o instrucción.
+    4. Programar el while.
 
 */
 using System;
@@ -127,30 +127,30 @@ namespace Emulador
                     match("Console");
                     match(".");
                     if (Contenido == "Read")
-{
-    match("Read");
-    try
-    {
-        int r = Console.Read();
-        if (maximoTipo > Variable.valorToTipoDato(r))
-        {
-            throw new Error("Tipo Dato. No esta permitido asignar un valor " + maximoTipo + " a una variable " + Variable.valorToTipoDato(r), log, linea, columna);
-        }
-        v.setValor(r);
-    }
-    catch (System.IO.IOException ex)
-    {
-        throw new Error("Error de E/S al leer desde la consola: " + ex.Message, log, linea, columna);
-    }
-    catch (OutOfMemoryException ex)
-    {
-        throw new Error("Error de memoria al leer desde la consola: " + ex.Message, log, linea, columna);
-    }
-    catch (Exception ex)
-    {
-        throw new Error("Error inesperado en Console.Read(): " + ex.Message, log, linea, columna);
-    }
-}
+                    {
+                        match("Read");
+                        try
+                        {
+                            int r = Console.Read();
+                            if (maximoTipo > Variable.valorToTipoDato(r))
+                            {
+                                throw new Error("Tipo Dato. No esta permitido asignar un valor " + maximoTipo + " a una variable " + Variable.valorToTipoDato(r), log, linea, columna);
+                            }
+                            v.setValor(r);
+                        }
+                        catch (System.IO.IOException ex)
+                        {
+                            throw new Error("Error de E/S al leer desde la consola: " + ex.Message, log, linea, columna);
+                        }
+                        catch (OutOfMemoryException ex)
+                        {
+                            throw new Error("Error de memoria al leer desde la consola: " + ex.Message, log, linea, columna);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Error("Error inesperado en Console.Read(): " + ex.Message, log, linea, columna);
+                        }
+                    }
                     else
                     {
                         match("ReadLine");
@@ -415,9 +415,9 @@ namespace Emulador
         while(Condicion);*/
         private void Do(bool ejecuta)
         {
-            bool executeDo;
-            int charTmp = Caracter - 3;
-            int linetmp = Error.linea;
+            int charTpm = contadorCaracter - 2;
+            int lineaTmp = linea;
+            bool ejecutaDo;
             do
             {
                 match("do");
@@ -439,7 +439,7 @@ namespace Emulador
                 if (executeDo)
                 {
                     archivo.BaseStream.Seek(charTmp, System.IO.SeekOrigin.Begin); // Corrección de 'seekOrigin' a 'SeekOrigin'
-                    Caracter = charTmp; // Suponiendo que 'CaracterActual' es la variable correcta
+                    contadorCaracter = charTmp; // Suponiendo que 'CaracterActual' es la variable correcta
                     nextToken(); // Asegúrate de que este método exista
                 }
             }
@@ -725,43 +725,43 @@ namespace Emulador
 
             switch (nombre)
             {
-                case "abs": 
-            resultado = Math.Abs(valor); 
-            break;
-        case "ceil": 
-            resultado = (float)Math.Ceiling(valor); // Corrección de math.ceiling a Math.Ceiling
-            break;
-        case "pow": 
-            resultado = (float)Math.Pow(valor, 2); // Añadimos el segundo parámetro que faltaba
-            break;
-        case "sqrt": 
-            resultado = (float)Math.Sqrt(valor); // Corrección de math.sqrt a Math.Sqrt
-            break;
-        case "exp": 
-            resultado = (float)Math.Exp(valor); 
-            break;
-        case "floor": 
-            resultado = (float)Math.Floor(valor); 
-            break;
-        case "max":
-            resultado = Math.Max(valor, 0); // Asumimos que queremos el máximo entre el valor y 0
-            break;
-        case "log10": 
-            resultado = (float)Math.Log10(valor); // Corrección de math.log10 a Math.Log10
-            break;
-        case "log2": 
-            resultado = (float)Math.Log(valor, 2); // No existe Math.Log2 directamente, usamos Log con base 2
-            break;
-        case "rand":
-            Random random = new Random();
-            resultado = (float)random.NextDouble() * valor; // Corrección del operador = a *
-            break;
-        case "trunc": 
-            resultado = (float)Math.Truncate(valor); 
-            break;
-        case "round": 
-            resultado = (float)Math.Round(valor); 
-            break;
+                case "abs":
+                    resultado = Math.Abs(valor);
+                    break;
+                case "ceil":
+                    resultado = (float)Math.Ceiling(valor); // Corrección de math.ceiling a Math.Ceiling
+                    break;
+                case "pow":
+                    resultado = (float)Math.Pow(valor, 2); // Añadimos el segundo parámetro que faltaba
+                    break;
+                case "sqrt":
+                    resultado = (float)Math.Sqrt(valor); // Corrección de math.sqrt a Math.Sqrt
+                    break;
+                case "exp":
+                    resultado = (float)Math.Exp(valor);
+                    break;
+                case "floor":
+                    resultado = (float)Math.Floor(valor);
+                    break;
+                case "max":
+                    resultado = Math.Max(valor, 0); // Asumimos que queremos el máximo entre el valor y 0
+                    break;
+                case "log10":
+                    resultado = (float)Math.Log10(valor); // Corrección de math.log10 a Math.Log10
+                    break;
+                case "log2":
+                    resultado = (float)Math.Log(valor, 2); // No existe Math.Log2 directamente, usamos Log con base 2
+                    break;
+                case "rand":
+                    Random random = new Random();
+                    resultado = (float)random.NextDouble() * valor; // Corrección del operador = a *
+                    break;
+                case "trunc":
+                    resultado = (float)Math.Truncate(valor);
+                    break;
+                case "round":
+                    resultado = (float)Math.Round(valor);
+                    break;
 
             }
             /*if(nombre == "abs"){
